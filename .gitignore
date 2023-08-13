@@ -1,0 +1,12 @@
+# IDE
+## IntelliJ
+.idea
+.iml
+
+# SBT
+**/target
+project/project
+.bsp
+
+# Environment file
+.env
