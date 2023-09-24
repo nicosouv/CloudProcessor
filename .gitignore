@@ -10,3 +10,6 @@ project/project
 
 # Environment file
 .env
+
+# run file
+docs/run.md

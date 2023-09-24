@@ -10,9 +10,9 @@ import scala.util.Try
 case class OrganizerPipelineConfig(
     clientId: String,
     clientSecret: String,
-    tenantId: String,
-    accessToken: String,
-    folderId: String) {}
+    sourceFolder: String,
+    destinationFolder: String,
+    tenantId: String) {}
 
 object OrganizerPipelineConfig {
 
@@ -21,8 +21,8 @@ object OrganizerPipelineConfig {
       clientId <- Try(config.getString("onedrive.clientId"))
       clientSecret <- Try(config.getString("onedrive.clientSecret"))
       tenantId <- Try(config.getString("onedrive.tenantId"))
-      accessToken <- Try(config.getString("onedrive.accessToken"))
-      folderId <- Try(config.getString("onedrive.folderId"))
+      sourceFolder <- Try(config.getString("onedrive.sourceFolder"))
+      destinationFolder <- Try(config.getString("onedrive.destinationFolder"))
     } yield {
       PipelineOptionsFactory.register(classOf[FolderPipelineOptions])
 
@@ -35,17 +35,17 @@ object OrganizerPipelineConfig {
         OrganizerPipelineConfig(
           options.getClientId.get,
           options.getClientSecret.get,
-          options.getTenantId.get,
-          options.getAccessToken.get,
-          options.getFolderId.get
+          options.getSourceFolder.get,
+          options.getDestinationFolder.get,
+          options.getTenantId.get
         )
       ).getOrElse(
         OrganizerPipelineConfig(
           clientId,
           clientSecret,
-          tenantId,
-          accessToken,
-          folderId
+          sourceFolder,
+          destinationFolder,
+          tenantId
         )
       )
 
@@ -63,14 +63,14 @@ trait FolderPipelineOptions extends ScioOptions {
   def setClientSecret(value: ValueProvider[String]): Unit
 
   @Required
+  def getSourceFolder: ValueProvider[String]
+  def setSourceFolder(value: ValueProvider[String]): Unit
+
+  @Required
+  def getDestinationFolder: ValueProvider[String]
+  def setDestinationFolder(value: ValueProvider[String]): Unit
+
+  @Required
   def getTenantId: ValueProvider[String]
   def setTenantId(value: ValueProvider[String]): Unit
-
-  @Required
-  def getAccessToken: ValueProvider[String]
-  def setAccessToken(value: ValueProvider[String]): Unit
-
-  @Required
-  def getFolderId: ValueProvider[String]
-  def setFolderId(value: ValueProvider[String]): Unit
 }

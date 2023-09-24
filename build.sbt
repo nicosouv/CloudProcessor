@@ -33,15 +33,17 @@ ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("staging") ++ Seq(
 val dependencies = Seq(
   "org.scalactic" %% "scalactic" % "3.2.15",
   "org.scalatest" %% "scalatest" % "3.2.15" % "test",
-  "com.spotify" %% "scio-core" % "0.13.1",
-  "com.spotify" %% "scio-jdbc" % "0.13.1",
-  "com.spotify" %% "scio-extra" % "0.13.1",
-  "com.spotify" %% "scio-repl" % "0.13.1",
-  "com.spotify" %% "scio-test" % "0.13.1" % "test",
+  "com.spotify" %% "scio-core" % "0.13.3",
+  "com.spotify" %% "scio-jdbc" % "0.13.3",
+  "com.spotify" %% "scio-extra" % "0.13.3",
+  "com.spotify" %% "scio-repl" % "0.13.3",
+  "com.spotify" %% "scio-test" % "0.13.3" % "test",
   "com.typesafe" % "config" % "1.4.2",
   "org.apache.beam" % "beam-runners-flink-1.16" % "2.47.0",
   "com.drewnoakes" % "metadata-extractor" % "2.18.0",
-  "com.microsoft.azure" % "msal4j" % "1.13.10"
+  "com.microsoft.azure" % "msal4j" % "1.13.10",
+  "com.azure" % "azure-identity" % "1.9.1",
+  "com.microsoft.graph" % "microsoft-graph" % "5.58.0"
 )
 
 lazy val root = (project in file("."))
