@@ -16,3 +16,4 @@ docs/run.md
 *.crt
 *.pem
 credentials.json
+tokens
