@@ -15,4 +15,4 @@ project/project
 docs/run.md
 *.crt
 *.pem
-src/main/resources/credentials.json
+credentials.json

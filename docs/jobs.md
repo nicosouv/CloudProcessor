@@ -49,7 +49,7 @@ sbt "runMain com.onedrive.image.processor.OrganizerPipeline \
 ```bash
 sbt "runMain com.onedrive.image.processor.OrganizerPipeline \
 --client=dropbox
---accessToken=sl.BqT7oNZ9tWjniQAQfynZqCNRXbHHBcOsGTCIUssSRuUoq_s8rEdJXBhtVBUU9ejDyTdr5_9veHEv169V62C1JcPI9afLi1D28YSX2dI2wIcPluBLa1QKZKVCOEG0n5A-reGOVpjHfFv_ \
+--accessToken=myToken \
 --inputFolder=oui \
 --outputFolder=oui"
 ```
