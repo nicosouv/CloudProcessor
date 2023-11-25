@@ -1,11 +1,13 @@
 package com.onedrive.image.processor
 
-import com.spotify.scio.options.ScioOptions
-import com.typesafe.config.Config
-import org.apache.beam.sdk.options.Validation.Required
-import org.apache.beam.sdk.options.{ PipelineOptionsFactory, ValueProvider }
-
 import scala.util.Try
+
+import com.typesafe.config.Config
+
+import org.apache.beam.sdk.options.{ PipelineOptionsFactory, ValueProvider }
+import org.apache.beam.sdk.options.Validation.Required
+
+import com.spotify.scio.options.ScioOptions
 
 case class OrganizerPipelineConfig(
     clientId: String,

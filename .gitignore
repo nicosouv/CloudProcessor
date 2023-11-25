@@ -13,3 +13,6 @@ project/project
 
 # run file
 docs/run.md
+*.crt
+*.pem
+src/main/resources/credentials.json

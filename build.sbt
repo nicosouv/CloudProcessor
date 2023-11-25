@@ -17,7 +17,7 @@ inThisBuild({
       ),
       semanticdbVersion := scalafixSemanticdb.revision,
       dependencyCheckFormat := "JUNIT",
-      dependencyCheckDataDirectory := Some(
+      dependencyCheckDataDirectory := Option(
         (ThisBuild / baseDirectory).value / "data"
       )
     )
@@ -30,20 +30,27 @@ ThisBuild / resolvers ++= Resolver.sonatypeOssRepos("staging") ++ Seq(
   "maven" at "https://maven.google.com"
 )
 
+val scioVersion = "0.13.6"
+val beamVersion = "2.52.0"
+
 val dependencies = Seq(
   "org.scalactic" %% "scalactic" % "3.2.15",
   "org.scalatest" %% "scalatest" % "3.2.15" % "test",
-  "com.spotify" %% "scio-core" % "0.13.3",
-  "com.spotify" %% "scio-jdbc" % "0.13.3",
-  "com.spotify" %% "scio-extra" % "0.13.3",
-  "com.spotify" %% "scio-repl" % "0.13.3",
-  "com.spotify" %% "scio-test" % "0.13.3" % "test",
+  "com.spotify" %% "scio-core" % scioVersion,
+  "com.spotify" %% "scio-jdbc" % scioVersion,
+  "com.spotify" %% "scio-extra" % scioVersion,
+  "com.spotify" %% "scio-repl" % scioVersion,
+  "com.spotify" %% "scio-test" % scioVersion % "test",
   "com.typesafe" % "config" % "1.4.2",
-  "org.apache.beam" % "beam-runners-flink-1.16" % "2.47.0",
+  "org.apache.beam" % "beam-runners-flink-1.16" % beamVersion,
   "com.drewnoakes" % "metadata-extractor" % "2.18.0",
   "com.microsoft.azure" % "msal4j" % "1.13.10",
   "com.azure" % "azure-identity" % "1.9.1",
-  "com.microsoft.graph" % "microsoft-graph" % "5.58.0"
+  "com.microsoft.graph" % "microsoft-graph" % "5.58.0",
+  "com.dropbox.core" % "dropbox-core-sdk" % "5.4.5",
+  "com.google.api-client" % "google-api-client" % "2.2.0",
+  "com.google.oauth-client" % "google-oauth-client-jetty" % "1.34.1",
+  "com.google.apis" % "google-api-services-drive" % "v3-rev20220815-2.0.0"
 )
 
 lazy val root = (project in file("."))

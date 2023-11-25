@@ -1,11 +1,14 @@
-package com.onedrive
+package com
 
-import com.spotify.scio.ScioContext
 import org.slf4j.{ Logger, LoggerFactory }
-import com.typesafe.config.Config
-import org.apache.beam.sdk.options.PipelineOptions
 
 import scala.util.Try
+
+import com.typesafe.config.Config
+
+import org.apache.beam.sdk.options.PipelineOptions
+
+import com.spotify.scio.ScioContext
 
 final class AppContext(
     val name: String,
