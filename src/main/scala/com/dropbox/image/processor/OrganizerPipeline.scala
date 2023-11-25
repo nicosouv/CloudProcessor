@@ -1,10 +1,9 @@
-package com.onedrive.image.processor
+package com.dropbox.image.processor
 
 import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.util.{ Failure, Success, Try }
 
-import scala.annotation.unused
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 import com.typesafe.config.ConfigFactory
@@ -12,7 +11,8 @@ import com.typesafe.config.ConfigFactory
 import com.spotify.scio.ScioContext
 
 import com.AppContext
-import com.onedrive.auth.AuthHelper
+import com.dropbox.auth.AuthHelper
+import com.dropbox.core.v2.DbxClientV2
 
 object OrganizerPipeline {
   private val loggerName = getClass.getName
@@ -24,15 +24,15 @@ object OrganizerPipeline {
   private val JOB_NAME = getClass.getSimpleName.stripSuffix("$")
 
   def main(cmdlineArgs: Array[String]): Unit = {
-    logger.info("Running OneDrive Image Processor job ...")
+    logger.info("Running Dropbox Image Processor job ...")
     logger.info(s"${cmdlineArgs.length}")
 
     (for {
       config <- Try(ConfigFactory.load())
 
-      jobCfg <- OrganizerPipelineConfig(config, cmdlineArgs)
+      jobCfg <- OrganizerConfig(config, cmdlineArgs)
       _ = logger.info(
-        s"Onedrive Image processor job configuration loaded: ${jobCfg}"
+        s"Dropbox processor job configuration loaded: ${jobCfg}"
       )
 
       context <- AppContext(config, cmdlineArgs, JOB_NAME)
@@ -52,7 +52,7 @@ object OrganizerPipeline {
 
   def apply(
       context: AppContext,
-      config: OrganizerPipelineConfig,
+      config: OrganizerConfig,
       cmdlineArgs: Array[String]
     ): Try[Unit] = {
 
@@ -62,29 +62,14 @@ object OrganizerPipeline {
 
       val sourceFolder = config.sourceFolder
       val destinationFolder = config.destinationFolder
-
-      val clientId = config.clientId
-      val clientSecret = config.clientSecret
-      val tenantId = config.tenantId
-      val graphClient =
-        AuthHelper.getGraphServiceClient(clientId, clientSecret, tenantId)
-
-      logger.info(s"CmdLine Length: ${cmdlineArgs.length}")
-      logger.info(s"From oneDriveFolder: $sourceFolder to destinationFolder: $destinationFolder")
-      logger.info(s"Access Token: $graphClient")
-
-      val images = graphClient
-        .drive()
-        .root()
-        .itemWithPath(sourceFolder)
-        .children
-        .buildRequest()
-        .get()
-        .getCurrentPage
-        .asScala
+      val client: DbxClientV2 = AuthHelper.getClient(config.accessToken)
+      val images =
+        client.files().listFolder(sourceFolder).getEntries.asScala.toList
+      println(cmdlineArgs)
+      println(destinationFolder)
 
       val processed = sc.parallelize(images).map { image =>
-        logger.info(s"Name: ${image.name}, Type: ${image.file.mimeType}")
+        logger.info(s"${image.getName}: ${image.getPathDisplay}")
       }
 
       processed.materialize
@@ -93,11 +78,4 @@ object OrganizerPipeline {
       ()
     }
   }
-
-  @unused
-  def getExifData(imagePath: String): Map[String, String] = {
-    logger.info(s"imagePath: $imagePath")
-    Map("dateTaken" -> "2023-08-10")
-  }
-
 }

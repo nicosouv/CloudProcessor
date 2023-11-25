@@ -1,13 +1,13 @@
 package com.onedrive.auth
 
+import scala.jdk.CollectionConverters._
+
+import com.azure.identity.ClientSecretCredentialBuilder
 import com.microsoft.graph.authentication.{
   BaseAuthenticationProvider,
   TokenCredentialAuthProvider
 }
 import com.microsoft.graph.requests.GraphServiceClient
-import com.azure.identity.ClientSecretCredentialBuilder
-
-import scala.jdk.CollectionConverters._
 
 object AuthHelper {
 
@@ -21,6 +21,7 @@ object AuthHelper {
       .tenantId(tenantId)
       .clientSecret(clientSecretId)
       .build()
+    println(s"DEVICE CODE CREDENTIAL: ${deviceCodeCredential}")
 
     new TokenCredentialAuthProvider(
       List(".default").asJava,
