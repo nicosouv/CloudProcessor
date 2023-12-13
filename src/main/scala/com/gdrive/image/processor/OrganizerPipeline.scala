@@ -3,16 +3,16 @@ package com.gdrive.image.processor
 import org.slf4j.{ Logger, LoggerFactory }
 
 import scala.util.{ Failure, Success, Try }
-
 import scala.jdk.CollectionConverters.CollectionHasAsScala
-
 import com.typesafe.config.ConfigFactory
-
 import com.spotify.scio.ScioContext
-
 import com.AppContext
 import com.gdrive.auth.AuthHelper
+import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.{ File, FileList }
+
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 object OrganizerPipeline {
   private val loggerName = getClass.getName
@@ -22,6 +22,9 @@ object OrganizerPipeline {
     LoggerFactory.getLogger(loggerName)
 
   private val JOB_NAME = getClass.getSimpleName.stripSuffix("$")
+
+  private val dateTimeFormatter: DateTimeFormatter =
+    DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss")
 
   def main(cmdlineArgs: Array[String]): Unit = {
     logger.info("Running gDrive Image Processor job ...")
@@ -62,31 +65,69 @@ object OrganizerPipeline {
 
       val sourceFolder = config.inputFolder
       val destinationFolder = config.outputFolder
-      val client = AuthHelper.getClient(config.credentialsPath)
+      val getClient: () => Drive =
+        () => AuthHelper.getClient(config.credentialsPath)
 
-      println(destinationFolder)
       println(cmdlineArgs)
 
       // List files in the specified folder
       logger.info("Getting files in input folder")
-      val fileList: FileList =
-        client
+      val gdriveFileList: FileList =
+        getClient()
           .files()
           .list()
-          .setFields("nextPageToken, files(id,name,parents)")
+          .setFields(
+            "nextPageToken,files(id, name, imageMediaMetadata, parents)"
+          )
           .setQ(s"'$sourceFolder' in parents")
           .execute()
 
-      val files: List[File] =
-        Option(fileList.getFiles.asScala.toList).getOrElse(List())
+      val fileList: List[File] =
+        Option(gdriveFileList.getFiles.asScala.toList).getOrElse(List())
 
       // Convert the list of files to an SCollection
-      logger.info(s"Processing ${files.length} files")
-      val fileSCollection =
-        sc.parallelize(files)
-          .map(processFile =>
-            s"FILE: ${processFile.getName}: ${processFile.getId}"
-          )
+      logger.info(s"Processing ${fileList.length} files")
+      val fileSCollection = sc
+        .parallelize(fileList)
+        .map { file =>
+          val tryDate = Try {
+            LocalDateTime.parse(
+              file.getImageMediaMetadata.getTime,
+              dateTimeFormatter
+            )
+          }
+
+          val date: Option[LocalDateTime] = tryDate match {
+            case Success(value) => Option(value)
+            case Failure(exception) =>
+              logger.error(s"Cannot get time for ${file.getName} ($exception)")
+              None
+          }
+
+          file -> date
+        }
+        .collect {
+          case (file, Some(date)) => (date.getYear, date.getMonthValue) -> file
+        }
+        .groupByKey
+        .map {
+          case ((year, month), iterableFiles) =>
+            val yearParentId =
+              AuthHelper.getOrCreateFolder(destinationFolder, year.toString)
+            val monthParentId =
+              AuthHelper.getOrCreateFolder(yearParentId, month.toString)
+
+            iterableFiles.map { file =>
+              logger.info(s"Moving file ${file.getName}: to $month")
+              getClient()
+                .files()
+                .update(file.getId, null)
+                .setAddParents(monthParentId)
+                .setRemoveParents(file.getParents.asScala.toList.mkString(","))
+                .setFields("id, parents")
+                .execute()
+            }
+        }
 
       // Materialize the result
       fileSCollection.materialize
